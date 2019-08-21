@@ -1,7 +1,7 @@
 # City-Explorer
 
-**Author**: Jon Schwamman, Jacob Swenson
-**Version**: 1.0.1 
+**Author**: Jon Schwamman, Jacob Swenson, James Zobian, Calvin Hall
+**Version**: 1.0.2
 
 ## Overview
 <!-- Provide a high level overview of what this application is and why you are building it, beyond the fact that it's an assignment for this class. (i.e. What's your problem domain?) -->
@@ -18,6 +18,8 @@
 
 08-20-2019 11:25am - Added constructor function and GET route for the weather resource.
 
+08-21-2019 12:00am - Added GET route for events resource
+
 ## Credits and Collaborations
 <!-- Give credit (and a link) to other people or resources that helped you build this application. -->
 -->
@@ -32,3 +34,14 @@ Start time: 9:15 am
 Finish time: 11:25 pm
 
 Actual time needed to complete: 2:10 hr:min
+
+
+Number and name of feature: 4? Events
+
+Estimate of time needed to complete: 3 hours
+
+Start time: 9:30am
+
+Finish time: 12:00am
+
+Actual time needed to complete: You do the math...
