@@ -52,7 +52,7 @@ app.get('/events', (request, response) => {
     superagent.get(`https://www.eventbriteapi.com/v3/events/search/?token=${process.env.EVENTBRITE_API_KEY}&location.latitude=${request.query.data.latitude}&location.longitude=${request.query.data.longitude}&location.within=10km`)
       .then((eventData) => {
         const events = eventData.body.events.map((event) => new Event(event));
-        response.send(events);
+        response.send(events.slice(0,20));
       });
   } catch (error) {
     handleError(error, response);
