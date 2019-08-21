@@ -38,6 +38,7 @@ app.get('/location', (request, response) => {
 app.get('/weather', (request, response) => {
   try {
     const weatherData = require('./data/darksky.json');
+    //Interesting usage of weather constructor.
     const weather = [];
     for (let i = 0; i < weatherData.daily.data.length; i++) {
       let dailyWeather = new Weather(weatherData, i);
