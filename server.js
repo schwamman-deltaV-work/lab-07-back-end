@@ -8,18 +8,6 @@ const superagent = require('superagent');
 const app = express();
 app.use(cors());
 
-app.get('/location', (request, response) => {
-  try {
-    superagent.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODEAPI_KEY}`)
-      .then((geoData) => {
-        const location = new Location(request.query.data, geoData.body);
-        response.send(location);
-      });
-  } catch(error) {
-    response.status(500).send('Dis website is broke. Call someone who cares.');
-  }
-});
-
 function Location(query, geoData){
   this.search_query = query;
   this.formatted_query = geoData.results[0].formatted_address;
@@ -34,6 +22,18 @@ function Weather(weatherData, i) {
     return new Date(weatherData.daily.data[i].time * 1000).toString().split(' ').slice(0, 4).join(' ');
   }
 }
+
+app.get('/location', (request, response) => {
+  try {
+    superagent.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODE_API_KEY}`)
+      .then((geoData) => {
+        const location = new Location(request.query.data, geoData.body);
+        response.send(location);
+      });
+  } catch(error) {
+    response.status(500).send('Dis website is broke. Call someone who cares.');
+  }
+});
 
 app.get('/weather', (request, response) => {
   try {
