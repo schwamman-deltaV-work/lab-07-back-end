@@ -40,11 +40,7 @@ app.get('/weather', (request, response) => {
   try {
     const weatherData = require('./data/darksky.json');
     //Interesting usage of weather constructor.
-    const weather = [];
-    for (let i = 0; i < weatherData.daily.data.length; i++) {
-      let dailyWeather = new Weather(weatherData.daily.data[i]);
-      weather.push(dailyWeather);
-    }
+    const weather = weatherData.daily.data.map((day) => new Weather(day));
     response.send(weather);
   } catch(error) {
     response.status(500).send('Dis website is broke. Call someone who cares.');
