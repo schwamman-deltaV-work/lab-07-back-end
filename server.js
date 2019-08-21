@@ -31,6 +31,10 @@ function Event(eventData) {
   this.summary = eventData.description.text;
 }
 
+function handleError(error, response) {
+  response.status(500).send(error.message);
+}
+
 app.get('/location', (request, response) => {
   try {
     superagent.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODE_API_KEY}`)
@@ -39,7 +43,7 @@ app.get('/location', (request, response) => {
         response.send(location);
       });
   } catch (error) {
-    response.status(500).send('Dis website is broke. Call someone who cares.');
+    handleError(error, response);
   }
 });
 
@@ -51,7 +55,7 @@ app.get('/events', (request, response) => {
         response.send(events);
       });
   } catch (error) {
-    response.status(500).send(error.message);
+    handleError(error, response);
   }
 });
 
@@ -64,7 +68,7 @@ app.get('/weather', (request, response) => {
       });
 
   } catch (error) {
-    response.status(500).send(error.message);
+    handleError(error, response);
   }
 });
 
