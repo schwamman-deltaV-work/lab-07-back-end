@@ -12,7 +12,7 @@ function convertTime(timeInMilliseconds) {
   return new Date(timeInMilliseconds).toString().split(' ').slice(0, 4).join(' ');
 }
 
-function Location(query, geoData){
+function Location(query, geoData) {
   this.search_query = query;
   this.formatted_query = geoData.results[0].formatted_address;
   this.latitude = geoData.results[0].geometry.location.lat;
@@ -31,24 +31,28 @@ app.get('/location', (request, response) => {
         const location = new Location(request.query.data, geoData.body);
         response.send(location);
       });
-  } catch(error) {
+  } catch (error) {
     response.status(500).send('Dis website is broke. Call someone who cares.');
   }
 });
 
 app.get('/weather', (request, response) => {
   try {
-    const weatherData = require('./data/darksky.json');
-    //Interesting usage of weather constructor.
-    const weather = weatherData.daily.data.map((day) => new Weather(day));
-    response.send(weather);
-  } catch(error) {
-    response.status(500).send('Dis website is broke. Call someone who cares.');
+    //https://api.darksky.net/forecast/0123456789abcdef9876543210fedcba/42.3601,-71.0589
+    //console.log(request.query)
+    superagent.get(`https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${request.query.data.latitude},${request.query.data.longitude}`)
+      .then((weatherData) => {
+        const weather = weatherData.body.daily.data.map((day) => new Weather(day));
+        response.send(weather);
+      });
+
+  } catch (error) {
+    response.status(500).send(error.message);
   }
 });
 
 app.get(/.*/, (req, res) => {
-  res.status(404).send({status: 404, responseText: 'This item could not be found..'});
+  res.status(404).send({ status: 404, responseText: 'This item could not be found..' });
 });
 
 const PORT = process.env.PORT || 3000;
