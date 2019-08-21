@@ -49,6 +49,10 @@ app.get('/weather', (request, response) => {
   }
 });
 
+app.get(/.*/, (req, res) => {
+  res.status(404).send({status: 404, responseText: 'This item could not be found..'});
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log('I know that you came to party baby, baby, baby, baby');
