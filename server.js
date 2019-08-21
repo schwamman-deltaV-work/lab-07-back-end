@@ -8,6 +8,10 @@ const superagent = require('superagent');
 const app = express();
 app.use(cors());
 
+function convertTime(timeInMilliseconds) {
+  return new Date(timeInMilliseconds).toString().split(' ').slice(0, 4).join(' ');
+}
+
 function Location(query, geoData){
   this.search_query = query;
   this.formatted_query = geoData.results[0].formatted_address;
@@ -15,12 +19,9 @@ function Location(query, geoData){
   this.longitude = geoData.results[0].geometry.location.lng;
 }
 
-function Weather(weatherData, i) {
-  this.forecast = weatherData.daily.data[i].summary;
-  this.time = convertTime();
-  function convertTime() {
-    return new Date(weatherData.daily.data[i].time * 1000).toString().split(' ').slice(0, 4).join(' ');
-  }
+function Weather(weatherData) {
+  this.forecast = weatherData.summary;
+  this.time = convertTime(weatherData.time * 1000);
 }
 
 app.get('/location', (request, response) => {
@@ -41,7 +42,7 @@ app.get('/weather', (request, response) => {
     //Interesting usage of weather constructor.
     const weather = [];
     for (let i = 0; i < weatherData.daily.data.length; i++) {
-      let dailyWeather = new Weather(weatherData, i);
+      let dailyWeather = new Weather(weatherData.daily.data[i]);
       weather.push(dailyWeather);
     }
     response.send(weather);
