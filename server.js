@@ -32,44 +32,37 @@ function Event(eventData) {
 }
 
 function handleError(error, response) {
-  response.status(500).send(error.message);
+  response.status(error.status).send(error.message);
 }
 
 app.get('/location', (request, response) => {
-  try {
-    superagent.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODE_API_KEY}`)
-      .then((geoData) => {
-        const location = new Location(request.query.data, geoData.body);
-        response.send(location);
-      });
-  } catch (error) {
-    handleError(error, response);
-  }
+  superagent
+    .get(`https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODE_API_KEY}`)
+    .then((geoData) => {
+      const location = new Location(request.query.data, geoData.body);
+      response.send(location);
+    })
+    .catch((error) => handleError(error, response));
 });
 
 app.get('/events', (request, response) => {
-  try {
-    superagent.get(`https://www.eventbriteapi.com/v3/events/search/?token=${process.env.EVENTBRITE_API_KEY}&location.latitude=${request.query.data.latitude}&location.longitude=${request.query.data.longitude}&location.within=10km`)
-      .then((eventData) => {
-        const events = eventData.body.events.map((event) => new Event(event));
-        response.send(events);
-      });
-  } catch (error) {
-    handleError(error, response);
-  }
+  superagent
+    .get(`https://www.eventbriteapi.com/v3/events/search/?token=${process.env.EVENTBRITE_API_KEY}&location.latitude=${request.query.data.latitude}&location.longitude=${request.query.data.longitude}&location.within=10km`)
+    .then((eventData) => {
+      const events = eventData.body.events.map((event) => new Event(event));
+      response.send(events);
+    })
+    .catch((error) => handleError(error, response));
 });
 
 app.get('/weather', (request, response) => {
-  try {
-    superagent.get(`https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${request.query.data.latitude},${request.query.data.longitude}`)
-      .then((weatherData) => {
-        const weather = weatherData.body.daily.data.map((day) => new Weather(day));
-        response.send(weather);
-      });
-
-  } catch (error) {
-    handleError(error, response);
-  }
+  superagent
+    .get(`https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${request.query.data.latitude},${request.query.data.longitude}`)
+    .then((weatherData) => {
+      const weather = weatherData.body.daily.data.map((day) => new Weather(day));
+      response.send(weather);
+    })
+    .catch((error) => handleError(error, response));
 });
 
 app.get(/.*/, (req, res) => {
