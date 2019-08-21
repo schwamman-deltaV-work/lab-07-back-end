@@ -24,6 +24,13 @@ function Weather(weatherData) {
   this.time = convertTime(weatherData.time * 1000);
 }
 
+function Event(eventData) {
+  this.link = eventData.url;
+  this.name = eventData.name.text;
+  this.event_date = eventData.url;
+  this.summary = eventData.description.text;
+}
+
 app.get('/location', (request, response) => {
   try {
     superagent.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODE_API_KEY}`)
@@ -36,10 +43,20 @@ app.get('/location', (request, response) => {
   }
 });
 
+app.get('/events', (request, response) => {
+  try {
+    superagent.get(`https://www.eventbriteapi.com/v3/events/search/?token=${process.env.EVENTBRITE_API_KEY}&location.latitude=${request.query.data.latitude}&location.longitude=${request.query.data.longitude}&location.within=10km`)
+      .then((eventData) => {
+        const events = eventData.body.events.map((event) => new Event(event));
+        response.send(events);
+      });
+  } catch (error) {
+    response.status(500).send(error.message);
+  }
+});
+
 app.get('/weather', (request, response) => {
   try {
-    //https://api.darksky.net/forecast/0123456789abcdef9876543210fedcba/42.3601,-71.0589
-    //console.log(request.query)
     superagent.get(`https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${request.query.data.latitude},${request.query.data.longitude}`)
       .then((weatherData) => {
         const weather = weatherData.body.daily.data.map((day) => new Weather(day));
