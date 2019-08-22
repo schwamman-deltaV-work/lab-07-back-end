@@ -4,6 +4,10 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const superagent = require('superagent');
+const pg = require('pg');
+
+const client = new pg.Client(process.env.DB_ADDRESS);
+client.connect();
 
 const app = express();
 app.use(cors());
@@ -12,11 +16,11 @@ function convertTime(timeInMilliseconds) {
   return new Date(timeInMilliseconds).toString().split(' ').slice(0, 4).join(' ');
 }
 
-function Location(query, geoData) {
+function Location(query, formatted, lat, long) {
   this.search_query = query;
-  this.formatted_query = geoData.results[0].formatted_address;
-  this.latitude = geoData.results[0].geometry.location.lat;
-  this.longitude = geoData.results[0].geometry.location.lng;
+  this.formatted_query = formatted;
+  this.latitude = lat;
+  this.longitude = long;
 }
 
 function Weather(weatherData) {
@@ -32,17 +36,30 @@ function Event(eventData) {
 }
 
 function handleError(error, response) {
-  response.status(error.status).send(error.message);
+  response.status(error.status || 500).send(error.message);
 }
 
 app.get('/location', (request, response) => {
-  superagent
-    .get(`https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODE_API_KEY}`)
-    .then((geoData) => {
-      const location = new Location(request.query.data, geoData.body);
-      response.send(location);
-    })
-    .catch((error) => handleError(error, response));
+  const query = 'SELECT * FROM locations WHERE search_query=$1;';
+  const values = [request.query.data];
+
+  client.query(query, values).then(results => {
+    if (results.rows.length === 0) {
+      superagent
+        .get(`https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODE_API_KEY}`)
+        .then((locationData) => {
+          const location = new Location(request.query.data, locationData.body.results[0].formatted_query, locationData.body.results[0].geometry.location.lat, locationData.body.results[0].geometry.location.lng);
+          const query = 'INSERT INTO locations (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4)';
+          const values = Object.values(location);
+          client.query(query, values).catch((...args) => console.log(args));
+          response.send(location);
+        })
+        .catch((error) => handleError(error, response));
+    } else {
+      console.log(results.rows[0]);
+      response.send(new Location(request.query.data, results.rows[0].formatted_query, results.rows[0].latitude, results.rows[0].longitude));
+    }
+  }).catch(error => console.log(error));
 });
 
 app.get('/events', (request, response) => {
